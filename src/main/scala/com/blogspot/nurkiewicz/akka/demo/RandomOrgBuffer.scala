@@ -9,10 +9,8 @@ import akka.util.duration._
 import akka.util.Timeout
 import akka.dispatch.Await
 import akka.event.LoggingReceive
-import java.util.concurrent.TimeUnit
 import com.weiglewilczek.slf4s.Logging
-import scala.collection.JavaConversions._
-import java.util.{ArrayList, Collections, Random}
+import java.util.Random
 
 object Bootstrap extends App with Logging {
 	val system = ActorSystem("Akka")
@@ -35,8 +33,6 @@ case object RandomRequest
 class RandomOrgBuffer extends Actor with ActorLogging {
 
 	val buffer = new Queue[Int]
-
-	val userAgent = Option(System.getProperty("email"))
 
 	def receive = LoggingReceive {
 		case RandomRequest =>
