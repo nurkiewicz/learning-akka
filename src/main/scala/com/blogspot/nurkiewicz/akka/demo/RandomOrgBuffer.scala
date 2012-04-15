@@ -9,31 +9,7 @@ import akka.util.duration._
 import akka.util.Timeout
 import akka.dispatch.Await
 import akka.event.LoggingReceive
-import com.weiglewilczek.slf4s.Logging
 import java.util.Random
-import java.util.concurrent.TimeUnit
-
-object Bootstrap extends App with Logging {
-	val system = ActorSystem("Akka")
-	system.log.info("Started")
-	val randomOrgBuffer = system.actorOf(Props[RandomOrgBuffer], "randomOrg")
-
-
-	val random = new RandomOrgRandom(randomOrgBuffer)
-
-	val scalaRandom = new scala.util.Random(random)
-
-	for(_ <- 1 to 100000) {
-		TimeUnit.MILLISECONDS.sleep(50);
-		val start = System.nanoTime()
-		random.nextInt(1000)
-		val end = System.nanoTime()
-		logger.info(((end - start) / 1000000.0).toString)
-	}
-
-	system.shutdown()
-
-}
 
 case object RandomRequest
 
