@@ -63,10 +63,10 @@ class RandomOrgBuffer extends Actor with ActorLogging {
 		case RandomOrgResponse(randomNumbers) =>
 			buffer ++= randomNumbers
 			waitingForResponse = false
-			backlog foreach {waitingClient =>
-				//TODO Handle when buffer is smaller than backlog
-				waitingClient ! buffer.dequeue()
+			while(!backlog.isEmpty && !buffer.isEmpty) {
+				backlog.dequeue() ! buffer.dequeue()
 			}
+			preFetchIfAlmostEmpty()
 	}
 
 	private def preFetchIfAlmostEmpty() {
@@ -83,7 +83,7 @@ case class RandomOrgRequest(batchSize: Int)
 case class RandomOrgResponse(randomNumbers: List[Int])
 
 class RandomOrgPoller extends Actor {
-	protected def receive = {
+	protected def receive = LoggingReceive {
 		case RandomOrgRequest(batchSize) =>
 			val url = new URL("https://www.random.org/integers/?num=" + batchSize + "&min=0&max=65535&col=1&base=10&format=plain&rnd=new")
 			val connection = url.openConnection()
