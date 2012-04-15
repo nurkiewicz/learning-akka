@@ -43,26 +43,33 @@ class RandomOrgBuffer extends Actor with ActorLogging {
 
 	val buffer = new Queue[Int]
 	val backlog = new Queue[ActorRef]
-	var waitingForResponse = false
 
 	val randomOrgPoller = context.actorOf(Props[RandomOrgPoller], name="randomOrgPoller")
-	preFetchIfAlmostEmpty()
+
+	override def preStart() {
+		preFetchIfAlmostEmpty()
+	}
 
 	def receive = LoggingReceive {
 		case RandomRequest =>
 			preFetchIfAlmostEmpty()
-			if(buffer.isEmpty) {
-				if(waitingForResponse) {
-					backlog += sender
-				} else {
-					preFetchIfAlmostEmpty()
-				}
-			} else {
-				sender ! buffer.dequeue()
-			}
+			handleOrQueueInBacklog()
+	}
+
+	def handleOrQueueInBacklog() {
+		if (buffer.isEmpty) {
+			backlog += sender
+		} else {
+			sender ! buffer.dequeue()
+		}
+	}
+
+	def receiveWhenWaiting = LoggingReceive {
+		case RandomRequest =>
+			handleOrQueueInBacklog()
 		case RandomOrgResponse(randomNumbers) =>
 			buffer ++= randomNumbers
-			waitingForResponse = false
+			context.unbecome()
 			while(!backlog.isEmpty && !buffer.isEmpty) {
 				backlog.dequeue() ! buffer.dequeue()
 			}
@@ -70,9 +77,9 @@ class RandomOrgBuffer extends Actor with ActorLogging {
 	}
 
 	private def preFetchIfAlmostEmpty() {
-		if(buffer.size <= BatchSize / 4 && !waitingForResponse) {
+		if(buffer.size <= BatchSize / 4) {
 			randomOrgPoller ! RandomOrgRequest(BatchSize)
-			waitingForResponse = true
+			context become receiveWhenWaiting
 		}
 	}
 
