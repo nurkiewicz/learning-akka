@@ -20,7 +20,7 @@ class RandomOrgBuffer extends Actor with ActorLogging {
 	val buffer = new Queue[Int]
 	val backlog = new Queue[ActorRef]
 
-	val randomOrgPoller = context.actorOf(Props[RandomOrgPoller], name="randomOrgPoller")
+	val randomOrgClient = context.actorOf(Props[RandomOrgClient], name="randomOrgClient")
 
 	override def preStart() {
 		preFetchIfAlmostEmpty()
@@ -43,7 +43,7 @@ class RandomOrgBuffer extends Actor with ActorLogging {
 	def receiveWhenWaiting = LoggingReceive {
 		case RandomRequest =>
 			handleOrQueueInBacklog()
-		case RandomOrgResponse(randomNumbers) =>
+		case RandomOrgServerResponse(randomNumbers) =>
 			buffer ++= randomNumbers
 			context.unbecome()
 			while(!backlog.isEmpty && !buffer.isEmpty) {
@@ -54,24 +54,24 @@ class RandomOrgBuffer extends Actor with ActorLogging {
 
 	private def preFetchIfAlmostEmpty() {
 		if(buffer.size <= BatchSize / 4) {
-			randomOrgPoller ! RandomOrgRequest(BatchSize)
+			randomOrgClient ! FetchFromRandomOrg(BatchSize)
 			context become receiveWhenWaiting
 		}
 	}
 
 }
 
-case class RandomOrgRequest(batchSize: Int)
+case class FetchFromRandomOrg(batchSize: Int)
 
-case class RandomOrgResponse(randomNumbers: List[Int])
+case class RandomOrgServerResponse(randomNumbers: List[Int])
 
-class RandomOrgPoller extends Actor {
+class RandomOrgClient extends Actor {
 	protected def receive = LoggingReceive {
-		case RandomOrgRequest(batchSize) =>
+		case FetchFromRandomOrg(batchSize) =>
 			val url = new URL("https://www.random.org/integers/?num=" + batchSize + "&min=0&max=65535&col=1&base=10&format=plain&rnd=new")
 			val connection = url.openConnection()
 			val stream = Source.fromInputStream(connection.getInputStream)
-			sender ! RandomOrgResponse(stream.getLines().map(_.toInt).toList)
+			sender ! RandomOrgServerResponse(stream.getLines().map(_.toInt).toList)
 			stream.close()
 	}
 }
