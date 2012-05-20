@@ -81,6 +81,11 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.2</version>
 		</dependency>
+		<dependency>
+			<groupId>com.ning</groupId>
+			<artifactId>async-http-client</artifactId>
+			<version>1.7.5</version>
+		</dependency>
 
 		<!-- Testing -->
 		<dependency>

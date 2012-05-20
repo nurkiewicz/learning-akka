@@ -1,9 +1,8 @@
 package com.blogspot.nurkiewicz.akka.demo
 
-import akka.actor.Actor
 import akka.event.LoggingReceive
-import java.net.URL
-import io.Source
+import com.ning.http.client.{RequestBuilder, AsyncCompletionHandler, Response, AsyncHttpClient}
+import akka.actor.Actor
 
 /**
  * @author Tomasz Nurkiewicz
@@ -14,12 +13,27 @@ case class FetchFromRandomOrg(batchSize: Int)
 case class RandomOrgServerResponse(randomNumbers: List[Int])
 
 class RandomOrgClient extends Actor {
-	protected def receive = LoggingReceive {
+
+	val client = new AsyncHttpClient();
+
+	override def postStop() {
+		client.close()
+	}
+
+	implicit def block2completionHandler[T](block: Response => T) = new AsyncCompletionHandler[T]() {
+		def onCompleted(response: Response) = block(response)
+	}
+
+	def receive = LoggingReceive {
 		case FetchFromRandomOrg(batchSize) =>
-			val url = new URL("https://www.random.org/integers/?num=" + batchSize + "&min=0&max=65535&col=1&base=10&format=plain&rnd=new")
-			val connection = url.openConnection()
-			val stream = Source.fromInputStream(connection.getInputStream)
-			sender ! RandomOrgServerResponse(stream.getLines().map(_.toInt).toList)
-			stream.close()
+			val curSender = sender
+			val request = new RequestBuilder().
+					setUrl("https://www.random.org/integers/?num=" + batchSize + "&min=0&max=65535&col=1&base=10&format=plain&rnd=new").
+					build();
+			client.executeRequest(request, {
+				response: Response =>
+					val numbers = response.getResponseBody.lines.map(_.toInt).toList
+					curSender ! RandomOrgServerResponse(numbers)
+			})
 	}
 }
