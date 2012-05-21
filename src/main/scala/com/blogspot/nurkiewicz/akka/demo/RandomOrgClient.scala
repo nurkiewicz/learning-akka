@@ -1,7 +1,7 @@
 package com.blogspot.nurkiewicz.akka.demo
 
 import akka.event.LoggingReceive
-import com.ning.http.client.{RequestBuilder, AsyncCompletionHandler, Response, AsyncHttpClient}
+import com.ning.http.client.{AsyncCompletionHandler, Response, AsyncHttpClient}
 import akka.actor.Actor
 
 /**
@@ -27,13 +27,11 @@ class RandomOrgClient extends Actor {
 	def receive = LoggingReceive {
 		case FetchFromRandomOrg(batchSize) =>
 			val curSender = sender
-			val request = new RequestBuilder().
-					setUrl("https://www.random.org/integers/?num=" + batchSize + "&min=0&max=65535&col=1&base=10&format=plain&rnd=new").
-					build();
-			client.executeRequest(request, {
+			val url = "https://www.random.org/integers/?num=" + batchSize + "&min=0&max=65535&col=1&base=10&format=plain&rnd=new"
+			client.prepareGet(url).execute {
 				response: Response =>
 					val numbers = response.getResponseBody.lines.map(_.toInt).toList
 					curSender ! RandomOrgServerResponse(numbers)
-			})
+			}
 	}
 }
