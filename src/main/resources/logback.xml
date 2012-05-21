@@ -3,6 +3,8 @@
 
 	<jmxConfigurator/>
 
+	<logger name="com.ning.http.client" level="INFO"/>
+
 	<root level="ALL">
 		<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 			<encoder>
