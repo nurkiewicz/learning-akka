@@ -14,7 +14,7 @@ case class RandomOrgServerResponse(randomNumbers: List[Int])
 
 class RandomOrgClient extends Actor {
 
-	val client = new AsyncHttpClient();
+	val client = new AsyncHttpClient()
 
 	override def postStop() {
 		client.close()
