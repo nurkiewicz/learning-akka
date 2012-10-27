@@ -1,13 +1,13 @@
 package com.blogspot.nurkiewicz.akka.demo
 
 import akka.actor._
-import collection.mutable.Queue
 import akka.pattern.ask
 import akka.util.duration._
 import akka.util.Timeout
 import akka.dispatch.Await
 import akka.event.LoggingReceive
 import java.util.Random
+import collection.mutable
 
 case object RandomRequest
 
@@ -15,8 +15,8 @@ class RandomOrgBuffer extends Actor with ActorLogging {
 
 	val BatchSize = 50
 
-	val buffer = new Queue[Int]
-	val backlog = new Queue[ActorRef]
+	val buffer = new mutable.Queue[Int]
+	val backlog = new mutable.Queue[ActorRef]
 
 	val randomOrgClient = context.actorOf(Props[RandomOrgClient], name="randomOrgClient")
 
@@ -60,7 +60,7 @@ class RandomOrgBuffer extends Actor with ActorLogging {
 }
 
 class RandomOrgRandom(randomOrgBuffer: ActorRef) extends Random {
-	implicit val timeout = Timeout(1 minutes)
+	implicit val timeout = Timeout(10 seconds)
 
 	override def next(bits: Int) = {
 		if(bits <= 16) {
