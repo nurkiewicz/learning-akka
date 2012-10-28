@@ -18,7 +18,7 @@ class RandomOrgBuffer extends Actor with ActorLogging {
 	val buffer = new mutable.Queue[Int]
 	val backlog = new mutable.Queue[ActorRef]
 
-	val randomOrgClient = context.actorOf(Props[RandomOrgClient], name="randomOrgClient")
+	val randomOrgClient = context.actorOf(Props[RandomOrgClient], name="client")
 
 	override def preStart() {
 		preFetchIfAlmostEmpty()

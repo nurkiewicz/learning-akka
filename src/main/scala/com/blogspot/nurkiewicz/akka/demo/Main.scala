@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 object Main extends App with Logging {
 	val system = ActorSystem("RandomOrgSystem")
 	system.log.info("Started")
-	val randomOrgBuffer = system.actorOf(Props[RandomOrgBuffer], "randomOrg")
+	val randomOrgBuffer = system.actorOf(Props[RandomOrgBuffer], "buffer")
 
 
 	val random = new RandomOrgRandom(randomOrgBuffer)
