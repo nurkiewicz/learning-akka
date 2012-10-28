@@ -2,7 +2,7 @@ package com.blogspot.nurkiewicz.akka.demo
 
 import com.weiglewilczek.slf4s.Logging
 import akka.actor.{ActorSystem, Props}
-import util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit
 
 /**
  * @author Tomasz Nurkiewicz
