@@ -22,10 +22,6 @@ class RandomOrgClient extends Actor {
 		client.close()
 	}
 
-	implicit def block2completionHandler[T](block: Response => T) = new AsyncCompletionHandler[T]() {
-		def onCompleted(response: Response) = block(response)
-	}
-
 	def receive = LoggingReceive {
 		case FetchFromRandomOrg(batchSize) =>
 			waitingForReply += (sender -> batchSize)
@@ -41,10 +37,13 @@ class RandomOrgClient extends Actor {
 
 	private def sendHttpRequest(batchSize: Int) {
 		val url = "https://www.random.org/integers/?num=" + batchSize + "&min=0&max=65535&col=1&base=10&format=plain&rnd=new"
-		client.prepareGet(url).execute {
-			response: Response =>
-				val numbers = response.getResponseBody.lines.map(_.toInt).toList
-				self ! RandomOrgServerResponse(numbers)
-		}
+		client.prepareGet(url).execute(new RandomOrgResponseHandler(self))
+	}
+}
+
+private class RandomOrgResponseHandler(notifyActor: ActorRef) extends AsyncCompletionHandler[Unit]() {
+	def onCompleted(response: Response) {
+		val numbers = response.getResponseBody.lines.map(_.toInt).toList
+		notifyActor ! RandomOrgServerResponse(numbers)
 	}
 }
