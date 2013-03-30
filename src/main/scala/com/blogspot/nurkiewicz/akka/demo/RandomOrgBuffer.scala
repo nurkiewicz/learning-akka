@@ -2,9 +2,9 @@ package com.blogspot.nurkiewicz.akka.demo
 
 import akka.actor._
 import akka.pattern.ask
-import akka.util.duration._
+import concurrent.duration._
 import akka.util.Timeout
-import akka.dispatch.Await
+import concurrent.Await
 import akka.event.LoggingReceive
 import java.util.Random
 import collection.mutable
