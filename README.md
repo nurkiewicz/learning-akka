@@ -56,7 +56,7 @@ This is the skeletal implementation of any `Runnable` that waits/blocks I want y
 	private def watch(path: Path) =
 		path.register(watchService, ENTRY_CREATE, ENTRY_DELETE)
 
-See how nicely we can traverse the whole directory tree using flat [`FileVisitor`](http://docs.oracle.com/javase/7/docs/api/java/nio/file/FileVisitor.html)? Now the last piece of the puzzle is the body of loop above (you will find full source code on GitHub):
+See how nicely we can traverse the whole directory tree using flat [`FileVisitor`](http://docs.oracle.com/javase/7/docs/api/java/nio/file/FileVisitor.html)? Now the last piece of the puzzle is the body of loop above (you will find full source code on [GitHub](https://github.com/nurkiewicz/learning-akka/blob/master/src/main/scala/com/blogspot/nurkiewicz/akka/demo/fs/WatchServiceTask.scala)):
 
 	key.pollEvents() foreach {
 		event =>
